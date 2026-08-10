@@ -1,0 +1,9 @@
+# Everything the storefront does not need: the preview harness, the image
+# generators and the docs stay in the repository and out of the theme.
+preview/
+tools/
+node_modules/
+package.json
+package-lock.json
+*.md
+*.zip

@@ -1,0 +1,4 @@
+{
+  "sections": { "main": { "type": "week-page", "settings": {} } },
+  "order": ["main"]
+}

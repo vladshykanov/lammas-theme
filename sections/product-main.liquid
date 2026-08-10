@@ -1,0 +1,193 @@
+{%- comment -%}
+  The product page. Two things here are the whole reason this theme exists:
+
+  1. The date picker is a function of the clock, not of stock. A tile is closed
+     because its cut-off has passed, not because the flowers ran out, and it says
+     which. The cut-off is stored on each delivery_day metaobject as unix
+     seconds, so the state is worked out at render time and cannot go stale.
+  2. The delivery method changes what can be bought. Choosing courier surfaces
+     the varieties in THIS week's bouquet that cannot survive a parcel. The list
+     is computed from the cut list, so it can never drift from the rule the cart
+     re-checks.
+
+  Both are real radio groups. A date you cannot pick is a disabled input with a
+  reason attached, not a div with a grey background. The choice travels with the
+  line as a line item property, so it is on the order and on the packing slip.
+{%- endcomment -%}
+
+{%- assign m = product.metafields.lammas -%}
+{%- assign v = product.selected_or_first_available_variant -%}
+{%- assign week = m.week.value -%}
+{%- assign now = 'now' | date: '%s' | plus: 0 -%}
+{%- assign methods = shop.metaobjects.delivery_method.values | sort: 'position' -%}
+
+<div class="wrap">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a> /
+    {%- if week != blank -%}
+      <a href="/collections/week-{{ week.number }}">{{ week.label }}</a> /
+    {%- endif -%}
+    <span aria-current="page">{{ product.title }}</span>
+  </nav>
+</div>
+
+<div class="wrap product">
+  <div class="product__media">
+    <figure class="product__stage plate">
+      <img src="{{ 'plates-seamless.jpg' | asset_url }}" alt="" width="1200" height="1200">
+      <span class="product__bouquet">{% render 'bouquet', b: product %}</span>
+    </figure>
+
+    <div class="thumbs" role="group" aria-label="Other views">
+      <span class="thumbs__item thumbs__item--current">{% render 'bouquet', b: product %}</span>
+      <img class="thumbs__item" src="{{ 'plates-field-wide.jpg' | asset_url }}" alt="The field this week" loading="lazy" width="1200" height="800">
+      <img class="thumbs__item" src="{{ 'plates-bench.jpg' | asset_url }}" alt="Wrapping at the bench" loading="lazy" width="1200" height="800">
+      <img class="thumbs__item" src="{{ 'plates-tunnel.jpg' | asset_url }}" alt="Inside the tunnel" loading="lazy" width="1200" height="800">
+    </div>
+  </div>
+
+  <div class="product__buy">
+    <h1 class="display product__title">{{ product.title }}</h1>
+    <p class="product__stems muted">{{ m.stems }}</p>
+    <p class="product__price display num">{{ v.price | money }}</p>
+    <p class="product__blurb">{{ section.settings.blurb }}</p>
+
+    <form class="buyform" action="{{ routes.cart_add_url }}" method="post">
+      <input type="hidden" name="id" value="{{ v.id }}">
+      <input type="hidden" name="return_to" value="{{ routes.cart_url }}">
+      {%- if week != blank -%}
+        <input type="hidden" name="properties[Week]" value="{{ week.label }}">
+      {%- endif -%}
+
+      <fieldset class="fieldset">
+        <legend class="fieldset__legend">1. Choose delivery date</legend>
+
+        <div class="dates">
+          {%- assign days = shop.metaobjects.delivery_day.values | sort: 'date' -%}
+          {%- assign picked = false -%}
+          {%- for d in days -%}
+            {%- liquid
+              assign selectable = true
+              assign reason = 'Available'
+              assign state = 'available'
+              assign cutoff = d.order_by.value | plus: 0
+              if cutoff <= now
+                assign selectable = false
+                assign reason = 'Cut-off passed'
+                assign state = 'closed'
+              elsif d.next_week.value
+                assign selectable = false
+                assign reason = 'Next week'
+                assign state = 'next'
+              endif
+            -%}
+            <div class="date">
+              <input class="date__input" type="radio" name="properties[Delivery date]" id="date-{{ d.date }}"
+                     value="{{ d.date }}"
+                     {% if selectable and picked == false %}checked{% endif %}
+                     {% unless selectable %}disabled{% endunless %}>
+              <label class="date__label" for="date-{{ d.date }}">
+                <span class="date__weekday">{{ d.weekday }}</span>
+                <span class="date__day num">{{ d.day }}</span>
+                <span class="date__state">{{ reason }}</span>
+                {%- unless selectable -%}
+                  <span class="visually-hidden">
+                    {%- if state == 'closed' -%}
+                      Not available: orders for this date closed at {{ d.order_by_label }}.
+                    {%- else -%}
+                      Not available yet: this date belongs to next week, which has not been cut.
+                    {%- endif -%}
+                  </span>
+                {%- endunless -%}
+              </label>
+            </div>
+            {%- if selectable -%}{%- assign picked = true -%}{%- endif -%}
+          {%- endfor -%}
+        </div>
+
+        <p class="cutline">
+          {% render 'icon', icon: 'scissors' %}
+          Cut days: Tue &amp; Fri &nbsp;·&nbsp; Order by Mon 18:00
+        </p>
+      </fieldset>
+
+      <fieldset class="fieldset">
+        <legend class="fieldset__legend">2. Choose delivery method</legend>
+
+        <div class="methods">
+          {%- for method in methods -%}
+            <div class="method">
+              <input class="method__input" type="radio" name="properties[Method]" id="method-{{ method.value }}"
+                     value="{{ method.label }}" {% if forloop.first %}checked{% endif %}>
+              <label class="method__label" for="method-{{ method.value }}">
+                <span>{{ method.label }}</span>
+                <span class="method__price num">{% if method.price.value > 0 %}{{ method.price.value | money }}{% else %}Free{% endif %}</span>
+              </label>
+            </div>
+          {%- endfor -%}
+        </div>
+
+        {%- comment -%}
+          Revealed by CSS the moment courier is selected, so the buyer learns
+          the restriction before pressing Add rather than at checkout. The
+          courier option stays choosable on purpose: a greyed-out radio with no
+          explanation teaches nothing. The cart re-checks the same rule.
+        {%- endcomment -%}
+        {%- unless m.courier_safe.value -%}
+          <p class="courierwarn" id="courier-warning">
+            {%- for blocked in m.courier_blocked_by.value -%}
+              {{ blocked.name }} ‘{{ blocked.cultivar }}’{% unless forloop.last %} and {% endunless %}
+            {%- endfor %}
+            do not ship by courier. Choose the van or farm pickup for this bouquet.
+          </p>
+        {%- endunless -%}
+      </fieldset>
+
+      <button class="btn btn--wide" type="submit">Add to cart</button>
+    </form>
+
+    <button class="savelink" type="button">Save for later</button>
+  </div>
+</div>
+
+{%- if m.composition.value.size > 0 -%}
+  <div class="wrap inthis">
+    <h2 class="display inthis__title">What's in this week's {{ product.title | remove: 'The ' }}</h2>
+    <div class="varieties">
+      {%- for flower in m.composition.value -%}
+        <a class="variety" href="/pages/varieties#{{ flower.slug }}">
+          <span class="variety__disc">{% render 'variety', v: flower %}</span>
+          <p class="variety__name">{{ flower.name }}</p>
+          <p class="variety__cultivar">{{ flower.cultivar }}</p>
+        </a>
+      {%- endfor -%}
+    </div>
+  </div>
+{%- endif -%}
+
+<div class="wrap accordions">
+  <details class="accordion">
+    <summary>Care &amp; vase life</summary>
+    <p>Cut 2cm off the stems at an angle and stand them in cold water within an hour.
+       Change the water every other day and keep them out of direct sun. Expect five to
+       eight days, less for the sweet peas, which are worth it anyway.</p>
+  </details>
+
+  <details class="accordion">
+    <summary>Delivery details</summary>
+    <p>Our van covers Fife and Edinburgh on Tuesdays and Fridays. UK courier goes next-day
+       and carries only the varieties that survive it. Farm pickup is Wednesday and Saturday,
+       nine until one, at the grading shed.</p>
+  </details>
+</div>
+
+{% schema %}
+{
+  "name": "Product",
+  "settings": [
+    { "id": "blurb", "type": "textarea", "label": "Blurb",
+      "default": "A hand-gathered armful from this week's field. Wrapped in paper. Vase not included." }
+  ],
+  "presets": [{ "name": "Product" }]
+}
+{% endschema %}

@@ -1,0 +1,15 @@
+{%- assign current = shop.metafields.lammas.current_week.value -%}
+<div class="wrap empty" style="padding-block:clamp(var(--s-8),14vw,var(--s-12))">
+  <p class="label">404</p>
+  <h1 class="display" style="font-size:var(--t-39);margin-block:var(--s-2) var(--s-2)">That page is not in the field</h1>
+  <p>The shop is organised by week, so old links go stale when a season ends. Week {{ current.number }} is cut and on the bench.</p>
+  <div class="empty__actions">
+    <a class="btn" href="/collections/week-{{ current.number }}">Shop week {{ current.number }}</a>
+    <a class="btn btn--ghost" href="/pages/archive">Season archive</a>
+    <a class="btn btn--ghost" href="/search">Search</a>
+  </div>
+</div>
+
+{% schema %}
+{ "name": "404", "settings": [], "presets": [{ "name": "404" }] }
+{% endschema %}

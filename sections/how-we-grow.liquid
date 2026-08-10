@@ -1,0 +1,31 @@
+<section class="wrap grow">
+  <div class="grow__text">
+    <h2 class="display">{{ section.settings.heading }}</h2>
+    <p class="grow__lede">{{ section.settings.lede }}</p>
+    <p class="muted">{{ section.settings.body }}</p>
+    <a class="textlink" href="{{ section.settings.link_url | default: '/pages/how-we-grow' }}">{{ section.settings.link_label }} &rarr;</a>
+  </div>
+
+  <figure class="grow__shot plate">
+    <img src="{{ 'plates-tunnel.jpg' | asset_url }}" alt="Inside one of the two polytunnels" loading="lazy" width="1200" height="800">
+  </figure>
+
+  <figure class="grow__shot plate">
+    <img src="{{ 'plates-bench.jpg' | asset_url }}" alt="Buckets of cut stems on the packing bench" loading="lazy" width="1200" height="800">
+  </figure>
+</section>
+
+{% schema %}
+{
+  "name": "How we grow",
+  "settings": [
+    { "id": "heading", "type": "text", "label": "Heading", "default": "How we grow" },
+    { "id": "lede", "type": "text", "label": "Lede", "default": "Small field. Two tunnels. No shortcuts." },
+    { "id": "body", "type": "textarea", "label": "Body",
+      "default": "We choose scent and season over distance and shelf life. Nothing here has been on a plane, and nothing is treated to hold longer than it naturally would." },
+    { "id": "link_label", "type": "text", "label": "Link", "default": "Learn more" },
+    { "id": "link_url", "type": "url", "label": "Link URL" }
+  ],
+  "presets": [{ "name": "How we grow" }]
+}
+{% endschema %}

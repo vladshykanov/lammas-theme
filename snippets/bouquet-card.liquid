@@ -1,0 +1,18 @@
+{%- assign m = b.metafields.lammas -%}
+<article class="bcard">
+  <a class="bcard__link" href="{{ b.url }}">
+    <span class="bcard__plate">{% render 'bouquet', b: b %}</span>
+    <h3 class="bcard__name display">{{ b.title }}</h3>
+  </a>
+  <p class="bcard__meta">{{ m.stems }}<br><span class="muted">{{ m.note }}</span></p>
+  <p class="bcard__price num">{{ b.price | money }}</p>
+  {%- comment -%}
+    Say it either way. "Ships UK-wide" is the reason to buy the Jar, and hiding
+    it would waste the only bouquet the farm can actually post.
+  {%- endcomment -%}
+  {%- if m.courier_safe.value -%}
+    <p class="bcard__flag bcard__flag--ok">{% render 'icon', icon: 'parcel' %} Ships UK-wide this week</p>
+  {%- else -%}
+    <p class="bcard__flag">{% render 'icon', icon: 'van' %} Van or pickup only this week</p>
+  {%- endif -%}
+</article>

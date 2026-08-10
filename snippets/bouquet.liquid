@@ -1,0 +1,94 @@
+{%- comment -%}
+  A bouquet, drawn from the week's actual cut list.
+
+  The individual flowers are simplified to heads on stems here rather than full
+  botanical portraits — at card size a bouquet needs the right masses and the
+  right colours, not six identifiable species. What matters is that the colours
+  come from `b.composition`, so when the field changes the bouquet changes with
+  it. Nobody has to remember to update a picture.
+
+  Accepts: b (bouquet object), vessel override
+{%- endcomment -%}
+
+{%- assign m = b.metafields.lammas -%}
+{%- assign comp = m.composition.value -%}
+{%- assign vessel = vessel | default: b.handle -%}
+{%- assign n = comp.size -%}
+
+<svg class="bouquet" viewBox="0 0 300 380" role="img"
+     aria-label="{{ b.title }}, {{ m.stems }}, made from this week's flowers">
+
+  {%- comment -%} Stems and heads. Fixed positions keep it stable between renders. {%- endcomment -%}
+  {%- assign xs = '150,112,188,86,214,132,168,100,200,150' | split: ',' -%}
+  {%- assign tops = '96,118,112,146,140,84,90,168,164,132' | split: ',' -%}
+
+  {%- assign draw = m.stems_drawn.value | default: 8 -%}
+  {%- for x in xs -%}
+    {%- assign i = forloop.index0 -%}
+    {%- if i < draw -%}
+      {%- assign top = tops[i] -%}
+      {%- assign ci = i | modulo: n -%}
+      {%- comment -%}
+        A metafield list is not indexable by a computed subscript, so the
+        composition is walked to the position wanted.
+      {%- endcomment -%}
+      {%- assign v = blank -%}
+      {%- for candidate in comp -%}
+        {%- if forloop.index0 == ci -%}{%- assign v = candidate -%}{%- endif -%}
+      {%- endfor -%}
+      <path d="M{{ x }} {{ top }} C{{ x }} 220 150 240 150 262"
+            stroke="#7f8a62" stroke-width="2.2" fill="none" opacity=".85"/>
+      {%- if v.form.value == 'plume' -%}
+        <ellipse cx="{{ x }}" cy="{{ top }}" rx="9" ry="16" fill="{{ v.hex.value }}"/>
+      {%- elsif v.form.value == 'spire' -%}
+        <ellipse cx="{{ x }}" cy="{{ top }}" rx="7" ry="19" fill="{{ v.hex.value }}"/>
+      {%- elsif v.form.value == 'lantern' -%}
+        <circle cx="{{ x }}" cy="{{ top }}" r="9" fill="{{ v.hex.value }}"/>
+        <circle cx="{{ x }}" cy="{{ top | plus: 18 }}" r="7" fill="{{ v.hex.value }}" opacity=".85"/>
+      {%- else -%}
+        <circle cx="{{ x }}" cy="{{ top }}" r="15" fill="{{ v.hex.value }}"/>
+        <circle cx="{{ x }}" cy="{{ top }}" r="5" fill="{{ v.accent.value }}"/>
+      {%- endif -%}
+    {%- endif -%}
+  {%- endfor -%}
+
+  {%- comment -%} Foliage, tucked behind the vessel line. {%- endcomment -%}
+  <path d="M150 250 C112 236 92 208 90 182 C120 190 142 220 150 250 Z" fill="#6f7d55" opacity=".8"/>
+  <path d="M150 246 C188 232 208 206 210 180 C180 188 158 216 150 246 Z" fill="#6f7d55" opacity=".65"/>
+
+  {%- case vessel -%}
+
+  {%- when 'armful' -%}
+    {%- comment -%} Kraft paper, folded to a cone and tied with string. {%- endcomment -%}
+    <path d="M96 244 L204 244 L182 356 C170 366 130 366 118 356 Z" fill="#d9c3a1"/>
+    <path d="M150 244 L204 244 L182 356 C172 364 158 366 150 366 Z" fill="#c9ae87"/>
+    <path d="M112 292 C138 300 162 300 188 292" stroke="#a08359" stroke-width="3" fill="none"/>
+    <path d="M150 296 C142 310 138 322 144 334" stroke="#a08359" stroke-width="2" fill="none"/>
+    <path d="M150 296 C158 310 162 320 156 332" stroke="#a08359" stroke-width="2" fill="none"/>
+
+  {%- when 'table' -%}
+    {%- comment -%} A footed vase for a long table. {%- endcomment -%}
+    <path d="M118 246 C112 288 116 316 124 340 L176 340 C184 316 188 288 182 246 Z"
+          fill="#e6e6df" opacity=".92"/>
+    <path d="M118 246 C112 288 116 316 124 340 L142 340 C132 314 128 286 132 246 Z"
+          fill="#ffffff" opacity=".55"/>
+    <rect x="132" y="340" width="36" height="10" rx="3" fill="#d9d9d1"/>
+    <rect x="118" y="350" width="64" height="8" rx="4" fill="#cfcfc6"/>
+
+  {%- when 'bucket' -%}
+    {%- comment -%} Galvanised bucket, straight from the field. {%- endcomment -%}
+    <path d="M104 250 L196 250 L182 352 L118 352 Z" fill="#b9bdba"/>
+    <path d="M104 250 L150 250 L150 352 L118 352 Z" fill="#cfd3d0" opacity=".8"/>
+    <rect x="104" y="250" width="92" height="8" fill="#a6aba7"/>
+    <path d="M112 262 C150 250 150 250 188 262" stroke="#8f9490" stroke-width="2.5" fill="none"/>
+
+  {%- else -%}
+    {%- comment -%} A jam jar, which is what The Jar is actually sold in. {%- endcomment -%}
+    <path d="M116 258 C112 292 114 316 120 336 C136 344 164 344 180 336 C186 316 188 292 184 258 Z"
+          fill="#e8e8e0" opacity=".9"/>
+    <path d="M116 258 C112 292 114 316 120 336 C128 340 136 342 144 343 C134 316 130 288 132 258 Z"
+          fill="#ffffff" opacity=".5"/>
+    <rect x="112" y="252" width="76" height="9" rx="3" fill="#d6d6cd"/>
+
+  {%- endcase -%}
+</svg>

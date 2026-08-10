@@ -1,0 +1,17 @@
+<div class="wrap">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a> / <a href="/blogs/journal">Journal</a> / <span aria-current="page">{{ article.title }}</span>
+  </nav>
+</div>
+
+<article class="wrap articlebody">
+  <p class="label">{{ article.published_at | date: '%-d %B %Y' }}</p>
+  <h1 class="display articlebody__title">{{ article.title }}</h1>
+  <div class="prose">{{ article.content }}</div>
+
+  <p style="margin-top:var(--s-6)"><a class="textlink" href="/blogs/journal">&larr; All journal entries</a></p>
+</article>
+
+{% schema %}
+{ "name": "Article", "settings": [], "presets": [{ "name": "Article" }] }
+{% endschema %}

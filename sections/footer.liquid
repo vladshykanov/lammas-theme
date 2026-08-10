@@ -1,0 +1,72 @@
+{%- assign current = shop.metafields.lammas.current_week.value -%}
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer__grid">
+      <div class="signup">
+        <h3 class="display">{{ section.settings.heading }}</h3>
+        <form class="signup__row" action="/contact#newsletter" method="post">
+          <label class="visually-hidden" for="newsletter">Email address</label>
+          <input id="newsletter" type="email" name="contact[email]" placeholder="Email address" required>
+          <button class="btn" type="submit">Subscribe</button>
+        </form>
+      </div>
+
+      <div>
+        <h4>Shop</h4>
+        <ul>
+          <li><a href="/collections/week-{{ current.number }}">This week</a></li>
+          <li><a href="/collections/bouquets">Bouquets</a></li>
+          <li><a href="/collections/buckets">Buckets</a></li>
+          <li><a href="/collections/dried">Dried flowers</a></li>
+          <li><a href="/pages/gift-cards">Gift cards</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>The farm</h4>
+        <ul>
+          <li><a href="/pages/about">About us</a></li>
+          <li><a href="/pages/how-we-grow">How we grow</a></li>
+          <li><a href="/blogs/journal">Journal</a></li>
+          <li><a href="/pages/varieties">All varieties</a></li>
+          <li><a href="/pages/sustainability">Sustainability</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Help</h4>
+        <ul>
+          <li><a href="/pages/delivery">Delivery</a></li>
+          <li><a href="/pages/care">Care &amp; vase life</a></li>
+          <li><a href="/pages/faqs">FAQs</a></li>
+          <li><a href="/pages/returns">Returns</a></li>
+          <li><a href="/pages/contact">Contact</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4>Policies</h4>
+        <ul>
+          <li><a href="/policies/terms-of-service">Terms &amp; conditions</a></li>
+          <li><a href="/policies/privacy-policy">Privacy policy</a></li>
+          <li><a href="/policies/shipping-policy">Shipping policy</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer__legal">
+      <span>&copy; {{ shop.name }} 2026 &nbsp;·&nbsp; {{ shop.place }}</span>
+      <span>We don't fly flowers. You'll smell the difference.</span>
+    </div>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Footer",
+  "settings": [
+    { "id": "heading", "type": "text", "label": "Newsletter heading",
+      "default": "What's cut this week, sent on a Sunday." }
+  ]
+}
+{% endschema %}

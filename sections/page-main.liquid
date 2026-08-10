@@ -1,0 +1,147 @@
+{%- liquid
+  assign all_varieties = shop.metaobjects.variety.values | sort: "name"
+  assign current = shop.metafields.lammas.current_week.value
+  assign weeks = shop.metaobjects.week.values | sort: 'number'
+-%}
+{%- comment -%}
+  Every content page and policy. Most are prose; four carry something the shop
+  actually needs — the variety reference, the season archive, a contact form and
+  the questions. Those are switched on `page.special` rather than being four
+  near-identical templates.
+{%- endcomment -%}
+
+<div class="wrap">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a> / <span aria-current="page">{{ page.title }}</span>
+  </nav>
+</div>
+
+<header class="wrap pagehead">
+  <h1 class="display pagehead__title">{{ page.title }}</h1>
+  {%- if page.metafields.lammas.lede != blank -%}<p class="pagehead__lede">{{ page.metafields.lammas.lede }}</p>{%- endif -%}
+</header>
+
+{%- case page.handle -%}
+
+{%- when 'varieties' -%}
+  {%- comment -%}
+    The reference behind every availability rule on the site. It is generated
+    from the same variety records the cart enforces, so it cannot say a flower
+    posts when the cart refuses it.
+  {%- endcomment -%}
+  <div class="wrap">
+    <div class="tablewrap">
+      <table class="travel travel--full">
+        <caption class="visually-hidden">Every variety, its scent and whether it can be posted</caption>
+        <thead>
+          <tr>
+            <th scope="col">Variety</th>
+            <th scope="col">Stems / bunch</th>
+            <th scope="col">Scent</th>
+            <th scope="col">Courier</th>
+            <th scope="col">Van</th>
+          </tr>
+        </thead>
+        <tbody>
+          {%- for v in all_varieties -%}
+            <tr id="{{ v.slug }}">
+              <th scope="row">
+                <span class="travel__art">{% render 'variety', v: v %}</span>
+                <span>{{ v.name }} <span class="muted">‘{{ v.cultivar }}’</span></span>
+              </th>
+              <td class="num">{{ v.stems_per_bunch }}</td>
+              <td>
+                <span class="visually-hidden">{{ v.scent }} out of 5</span>
+                <span aria-hidden="true" class="scent">
+                  {%- for i in (1..5) -%}
+                    <span class="scent__dot {% if i <= v.scent.value %}scent__dot--on{% endif %}"></span>
+                  {%- endfor -%}
+                </span>
+              </td>
+              <td>
+                {%- if v.courier_safe.value -%}<span class="yes" aria-label="Yes">✓</span>
+                {%- else -%}<span class="no" aria-label="No">✕</span>{%- endif -%}
+              </td>
+              <td><span class="yes" aria-label="Yes">✓</span></td>
+            </tr>
+            {%- if v.note != blank -%}
+              <tr class="travel__note"><td colspan="5">{{ v.note }}</td></tr>
+            {%- endif -%}
+          {%- endfor -%}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+{%- when 'archive' -%}
+  <div class="wrap">
+    <ol class="archive">
+      {%- for w in weeks -%}
+        <li class="archive__row {% unless w.published.value %}archive__row--empty{% endunless %}">
+          <span class="archive__num num">{{ w.number }}</span>
+          <span class="archive__dates">{{ w.dates }}</span>
+          {%- if w.published.value -%}
+            <span class="archive__note">{{ w.note }}</span>
+            <a class="textlink" href="/collections/week-{{ w.number }}">View</a>
+          {%- else -%}
+            <span class="archive__note muted">Not cut</span>
+            <span></span>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ol>
+  </div>
+
+{%- when 'contact' -%}
+  <div class="wrap contactgrid">
+    <form class="contactform" action="/pages/contact" method="post">
+      <div class="field">
+        <label for="c-name">Your name</label>
+        <input id="c-name" name="name" type="text" autocomplete="name" required>
+      </div>
+      <div class="field">
+        <label for="c-email">Email</label>
+        <input id="c-email" name="email" type="email" autocomplete="email" required>
+      </div>
+      <div class="field">
+        <label for="c-message">Message</label>
+        <textarea id="c-message" name="message" rows="6" required></textarea>
+      </div>
+      <button class="btn" type="submit">Send</button>
+    </form>
+
+    <div class="contactaside">
+      <h2 class="display">The shed</h2>
+      <p class="muted">Balmalcolm, Cupar, Fife KY15 7TJ</p>
+      <p class="muted">Open for pickup Wednesday and Saturday, 9–13.</p>
+      <h2 class="display" style="margin-top:var(--s-4)">Email</h2>
+      <p class="muted">hello@lammas.flowers — usually answered within two days, slower in August.</p>
+      <h2 class="display" style="margin-top:var(--s-4)">Weddings</h2>
+      <p class="muted">Send the date and venue and we will tell you honestly whether it is free.</p>
+    </div>
+  </div>
+
+{%- when 'faq' -%}
+  <div class="wrap accordions accordions--page">
+    {%- for f in faqs -%}
+      <details class="accordion">
+        <summary>{{ f.q }}</summary>
+        <p>{{ f.a }}</p>
+      </details>
+    {%- endfor -%}
+  </div>
+
+{%- else -%}
+  <div class="wrap prose">
+    {%- for block in page.blocks -%}
+      <section class="prose__block">
+        <h2 class="display prose__heading">{{ block.heading }}</h2>
+        {%- for p in block.body -%}<p>{{ p }}</p>{%- endfor -%}
+      </section>
+    {%- endfor -%}
+  </div>
+{%- endcase -%}
+
+{% schema %}
+{ "name": "Page", "settings": [], "presets": [{ "name": "Page" }] }
+{% endschema %}

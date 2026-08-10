@@ -1,0 +1,172 @@
+{%- comment -%}
+  The week page. This is the collection page, but the collection is a week, so
+  it leads with the dates and what came out of the field rather than with a
+  category name. The week itself is a metaobject with the same handle as the
+  collection, which is what lets this page talk about the field rather than
+  about a product list.
+{%- endcomment -%}
+
+{%- assign week = shop.metaobjects.week[collection.handle] -%}
+{%- assign current = shop.metafields.lammas.current_week.value -%}
+{%- assign now = 'now' | date: '%s' | plus: 0 -%}
+
+{%- comment -%} The first day still open, so a quick add can carry one. {%- endcomment -%}
+{%- assign open_day = blank -%}
+{%- assign days = shop.metaobjects.delivery_day.values | sort: 'date' -%}
+{%- for d in days -%}
+  {%- assign cutoff = d.order_by.value | plus: 0 -%}
+  {%- if open_day == blank and cutoff > now and d.next_week.value != true -%}
+    {%- assign open_day = d.date -%}
+  {%- endif -%}
+{%- endfor -%}
+
+<div class="wrap">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a> / <a href="/collections/week-{{ current.number }}">Weeks</a> /
+    <span aria-current="page">{{ week.label | default: collection.title }}</span>
+  </nav>
+</div>
+
+{%- if week.published.value -%}
+
+  <div class="wrap weekhead">
+    <div>
+      <h1 class="display weekhead__title">{{ week.label }} <span class="muted">·</span> {{ week.dates }}</h1>
+      <p class="weekhead__note">{{ week.note }}</p>
+    </div>
+    <figure class="weekhead__shot plate">
+      <img src="{{ 'plates-field-wide.jpg' | asset_url }}"
+           alt="The field in {{ week.label }}" loading="lazy" width="1200" height="800">
+    </figure>
+  </div>
+
+  {% render 'facts' %}
+
+  <div class="wrap toolbar">
+    {%- comment -%}
+      Only kinds that are actually in this week get a chip. Each is Shopify's
+      own tag filtering, so the chip is a real link with a real result.
+    {%- endcomment -%}
+    <div class="chips" role="group" aria-label="Filter by kind">
+      <a class="chip" href="{{ collection.url }}"
+         {% if current_tags.size == 0 %}aria-current="true"{% endif %}>All</a>
+      {%- assign kinds = 'bouquet,bucket,dried,seeds,workshop' | split: ',' -%}
+      {%- for k in kinds -%}
+        {%- if collection.all_tags contains k -%}
+          <a class="chip" href="{{ collection.url }}/{{ k }}"
+             {% if current_tags contains k %}aria-current="true"{% endif %}>{{ k | capitalize }}s</a>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+
+    <p class="toolbar__sort label">Sort: featured</p>
+  </div>
+
+  <div class="wrap">
+    <div class="bouquets">
+      {%- for b in collection.products -%}
+        {%- assign m = b.metafields.lammas -%}
+        {%- assign variant = b.selected_or_first_available_variant -%}
+        <article class="bcard">
+          <a class="bcard__link" href="{{ b.url }}">
+            <span class="bcard__plate">{% render 'bouquet', b: b %}</span>
+            <h2 class="bcard__name display">{{ b.title }}</h2>
+          </a>
+          <p class="bcard__meta">{{ m.stems }}<br><span class="muted">{{ m.note }}</span></p>
+          <p class="bcard__price num">{{ b.price | money }}</p>
+
+          {%- if m.courier_safe.value -%}
+            <p class="bcard__flag bcard__flag--ok">{% render 'icon', icon: 'parcel' %} Ships UK-wide</p>
+          {%- else -%}
+            <p class="bcard__flag">{% render 'icon', icon: 'van' %} Van or pickup only</p>
+          {%- endif -%}
+
+          {%- comment -%}
+            The Bucket is made to order at the bench, so it opens rather than
+            adding straight to the cart — you pick a delivery day first. The
+            others add with the first day that is still open attached, because
+            a line without a date is a line the bench cannot cut for.
+          {%- endcomment -%}
+          {%- if b.handle == 'bucket' or open_day == blank -%}
+            <a class="btn btn--ghost bcard__add" href="{{ b.url }}">View</a>
+          {%- else -%}
+            <form action="{{ routes.cart_add_url }}" method="post" class="bcard__add">
+              <input type="hidden" name="id" value="{{ variant.id }}">
+              <input type="hidden" name="properties[Delivery date]" value="{{ open_day }}">
+              <input type="hidden" name="properties[Week]" value="{{ week.label }}">
+              <input type="hidden" name="return_to" value="{{ routes.cart_url }}">
+              <button class="btn btn--ghost btn--wide" type="submit">Add</button>
+            </form>
+          {%- endif -%}
+        </article>
+      {%- endfor -%}
+    </div>
+  </div>
+
+  {%- comment -%}
+    The delivery table. Section 3.2 of the brief: a buyer must be able to see
+    which flowers can leave the van routes BEFORE opening a product. Every row
+    is generated from variety.courier_safe, so it cannot drift from the rule the
+    product page states.
+  {%- endcomment -%}
+  <div class="wrap traveltable">
+    <div class="traveltable__intro">
+      <h2 class="display">{{ section.settings.travel_heading }}</h2>
+      <p class="muted">{{ section.settings.travel_body }}</p>
+      <a class="textlink" href="/pages/delivery">{{ section.settings.travel_link }} &rarr;</a>
+    </div>
+
+    <table class="travel">
+      <caption class="visually-hidden">How each variety cut this week can be delivered</caption>
+      <thead>
+        <tr>
+          <th scope="col">Available this week</th>
+          <th scope="col">Courier (UK)</th>
+          <th scope="col">Van (Fife &amp; Edinburgh)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {%- for v in week.varieties.value -%}
+          <tr>
+            <th scope="row">{{ v.name }} <span class="muted">‘{{ v.cultivar }}’</span></th>
+            <td>
+              {%- if v.courier_safe.value -%}
+                <span class="yes" aria-label="Yes">✓</span>
+              {%- else -%}
+                <span class="no" aria-label="No">✕</span>
+                <span class="visually-hidden">{{ v.note }}</span>
+              {%- endif -%}
+            </td>
+            <td><span class="yes" aria-label="Yes">✓</span></td>
+          </tr>
+        {%- endfor -%}
+      </tbody>
+    </table>
+  </div>
+
+{%- else -%}
+
+  {%- comment -%} A week the field has not reached yet, or has already passed. {%- endcomment -%}
+  <div class="wrap empty">
+    <h1 class="display">{{ week.label | default: collection.title }} <span class="muted">· {{ week.dates }}</span></h1>
+    <p>Nothing has been cut for this week yet. The cut list goes up on the Monday before.</p>
+    <div class="empty__actions">
+      <a class="btn" href="/collections/week-{{ current.number }}">Shop week {{ current.number }}</a>
+      <a class="btn btn--ghost" href="/pages/archive">Season archive</a>
+    </div>
+  </div>
+
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Week page",
+  "settings": [
+    { "id": "travel_heading", "type": "text", "label": "Delivery heading", "default": "Not flying, not rushing" },
+    { "id": "travel_body", "type": "textarea", "label": "Delivery body",
+      "default": "Only flowers that can travel well by courier are available outside our van routes. Everything on this list can go in the van." },
+    { "id": "travel_link", "type": "text", "label": "Delivery link", "default": "Delivery info" }
+  ],
+  "presets": [{ "name": "Week page" }]
+}
+{% endschema %}

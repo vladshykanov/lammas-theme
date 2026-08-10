@@ -1,0 +1,54 @@
+{%- comment -%}
+  One cart line, used by both the drawer and the cart page. Shared on purpose:
+  two copies of this markup would drift, and the drawer is exactly where a
+  courier problem needs to be visible.
+
+  Accepts: item, method (the chosen delivery method), compact (drawer omits the
+  quantity form)
+{%- endcomment -%}
+
+{%- assign m = item.product.metafields.lammas -%}
+{%- assign kind = m.kind.value | default: 'bouquet' -%}
+
+<div class="line">
+  <span class="line__thumb">
+    {%- if kind == 'bouquet' -%}
+      {% render 'bouquet', b: item.product %}
+    {%- else -%}
+      {% render 'icon', icon: 'clock' %}
+    {%- endif -%}
+  </span>
+
+  <div class="line__body">
+    <h3 class="line__name">{{ item.product.title }}</h3>
+    <p class="line__meta muted">
+      {%- for property in item.properties -%}
+        {%- unless property.last == blank -%}
+          {{ property.first }}: {{ property.last }}{% unless forloop.last %} &nbsp;·&nbsp; {% endunless %}
+        {%- endunless -%}
+      {%- endfor -%}
+    </p>
+
+    {%- if kind == 'booking' -%}
+      <p class="line__meta line__free">Free with any order.</p>
+    {%- elsif m.courier_safe.value == false and method == 'courier' -%}
+      <p class="line__meta line__flag">Cannot travel by courier</p>
+    {%- endif -%}
+
+    {%- unless compact -%}
+      <form action="{{ routes.cart_change_url }}" method="post" class="qtyform">
+        <input type="hidden" name="id" value="{{ item.key }}">
+        <label class="visually-hidden" for="q-{{ item.key }}">Quantity for {{ item.product.title }}</label>
+        <input id="q-{{ item.key }}" class="qtyform__input num" type="number"
+               name="quantity" value="{{ item.quantity }}" min="0" max="20">
+        <button class="linkbtn" type="submit">Update</button>
+      </form>
+    {%- else -%}
+      <p class="line__meta muted">Qty {{ item.quantity }}</p>
+    {%- endunless -%}
+  </div>
+
+  <p class="line__price num">
+    {%- if item.final_line_price > 0 -%}{{ item.final_line_price | money }}{%- else -%}Free{%- endif -%}
+  </p>
+</div>

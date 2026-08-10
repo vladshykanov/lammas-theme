@@ -1,0 +1,51 @@
+{%- comment -%}
+  Everything wrong with this order, as <li> items and nothing else — so the
+  cart page and the drawer can both ask the same question and get the same
+  answer. Capture it and test for '<li>' to know whether to block checkout.
+
+  The rules are the farm's, not Shopify's: a line has to carry a delivery date,
+  that date has to still be open, and a bouquet built from flowers that bruise
+  cannot go on a courier.
+
+  Accepts: date (the chosen delivery date), method (the chosen method value)
+{%- endcomment -%}
+
+{%- liquid
+  assign now = 'now' | date: '%s' | plus: 0
+  assign days = shop.metaobjects.delivery_day.values
+  assign chosen = blank
+  for d in days
+    if d.date.value == date
+      assign chosen = d
+    endif
+  endfor
+-%}
+
+{%- if date == blank -%}
+  <li>Choose a delivery date.</li>
+{%- elsif chosen == blank -%}
+  <li>{{ date }} is not one of this week's delivery days.</li>
+{%- else -%}
+  {%- assign cutoff = chosen.order_by.value | plus: 0 -%}
+  {%- if cutoff <= now -%}
+    <li>Orders for {{ chosen.weekday }} {{ chosen.day }} closed at {{ chosen.order_by_label }}. Pick another day.</li>
+  {%- elsif chosen.next_week.value -%}
+    <li>{{ chosen.weekday }} {{ chosen.day }} belongs to next week, which has not been cut yet.</li>
+  {%- endif -%}
+{%- endif -%}
+
+{%- if method == 'courier' -%}
+  {%- for item in cart.items -%}
+    {%- assign m = item.product.metafields.lammas -%}
+    {%- if m.kind.value != 'booking' and m.courier_safe.value == false -%}
+      <li>
+        {{ item.product.title }} cannot travel by courier
+        {%- if m.courier_blocked_by.value.size > 0 -%}
+          {{ ' ' }}({%- for v in m.courier_blocked_by.value -%}
+            {{ v.name }} ‘{{ v.cultivar }}’{% unless forloop.last %}, {% endunless %}
+          {%- endfor -%})
+        {%- endif -%}. Choose the van or farm pickup.
+      </li>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}

@@ -1,0 +1,193 @@
+{%- comment -%}
+  The cart. Delivery date and method live here rather than on each line,
+  because one order is delivered once — which is also what makes the delivery
+  charge appear once rather than per bouquet. Both are cart attributes, so they
+  reach the order and the packing slip.
+
+  Any problem is stated at the top and the checkout button is genuinely
+  disabled. Shopify's checkout cannot be blocked from a theme — that needs a
+  cart-validation function — so this is the last stop the theme owns, and it
+  states the rule rather than hiding the button.
+{%- endcomment -%}
+
+{%- liquid
+  assign current = shop.metafields.lammas.current_week.value
+  assign now = 'now' | date: '%s' | plus: 0
+  assign methods = shop.metaobjects.delivery_method.values | sort: 'position'
+
+  assign date = cart.attributes['Delivery date']
+  assign method = cart.attributes['Method']
+
+  comment
+    A line added from a week page carries its own date; the first one becomes
+    the order's until the buyer says otherwise.
+  endcomment
+  if date == blank
+    for item in cart.items
+      if item.properties['Delivery date'] != blank and date == blank
+        assign date = item.properties['Delivery date']
+      endif
+    endfor
+  endif
+  if method == blank
+    assign method = 'van'
+  endif
+
+  assign method_label = ''
+  assign method_price = 0
+  for m in methods
+    if m.value.value == method
+      assign method_label = m.label.value
+      assign method_price = m.price.value
+    endif
+  endfor
+-%}
+
+{%- capture problems -%}{% render 'cart-problems', date: date, method: method %}{%- endcapture -%}
+{%- assign blocked = false -%}
+{%- if problems contains '<li>' -%}{%- assign blocked = true -%}{%- endif -%}
+
+<div class="wrap">
+  {%- if cart.items.size > 0 -%}
+
+    <h1 class="display cart__title">Your cart ({{ cart.item_count }})</h1>
+
+    {%- if blocked -%}
+      <div class="problems" role="alert">
+        <p class="problems__head">This order cannot be placed yet</p>
+        <ul>{{ problems }}</ul>
+      </div>
+    {%- endif -%}
+
+    <div class="cartgrid">
+      <div>
+        <table class="cartlines">
+          <caption class="visually-hidden">Items in your cart</caption>
+          <thead>
+            <tr><th scope="col">Item</th></tr>
+          </thead>
+          <tbody>
+            {%- for item in cart.items -%}
+              <tr>
+                <td>
+                  {% render 'cart-line', item: item, method: method %}
+                </td>
+              </tr>
+            {%- endfor -%}
+          </tbody>
+        </table>
+
+        {%- comment -%} The booking is an upsell, so it is offered rather than assumed. {%- endcomment -%}
+        {%- assign has_booking = false -%}
+        {%- for i in cart.items -%}
+          {%- if i.product.metafields.lammas.kind.value == 'booking' -%}{%- assign has_booking = true -%}{%- endif -%}
+        {%- endfor -%}
+        {%- assign booking = all_products['listening-room'] -%}
+        {%- if has_booking == false and booking != blank -%}
+          <form class="upsell" action="{{ routes.cart_add_url }}" method="post">
+            <input type="hidden" name="id" value="{{ booking.selected_or_first_available_variant.id }}">
+            <input type="hidden" name="return_to" value="{{ routes.cart_url }}">
+            <div>
+              <p class="upsell__title">Add a Listening Room session</p>
+              <p class="muted">90 minutes in the old grading shed. Free with any order.</p>
+            </div>
+            <button class="btn btn--ghost" type="submit">Add</button>
+          </form>
+        {%- endif -%}
+
+        <p style="margin-top:var(--s-3)"><a class="textlink" href="/collections/week-{{ current.number }}">Continue shopping &rarr;</a></p>
+      </div>
+
+      <aside class="summary">
+        <form action="{{ routes.cart_update_url }}" method="post">
+          <fieldset class="fieldset">
+            <legend class="fieldset__legend">Delivery date</legend>
+            <div class="dates dates--cart">
+              {%- assign days = shop.metaobjects.delivery_day.values | sort: 'date' -%}
+              {%- for d in days -%}
+                {%- liquid
+                  assign selectable = true
+                  assign reason = 'Available'
+                  assign cutoff = d.order_by.value | plus: 0
+                  if cutoff <= now
+                    assign selectable = false
+                    assign reason = 'Cut-off passed'
+                  elsif d.next_week.value
+                    assign selectable = false
+                    assign reason = 'Next week'
+                  endif
+                -%}
+                <div class="date">
+                  <input class="date__input" type="radio" name="attributes[Delivery date]" id="cart-date-{{ d.date }}"
+                         value="{{ d.date }}" {% if d.date.value == date %}checked{% endif %}
+                         {% unless selectable %}disabled{% endunless %}>
+                  <label class="date__label" for="cart-date-{{ d.date }}">
+                    <span class="date__weekday">{{ d.weekday }}</span>
+                    <span class="date__day num">{{ d.day }}</span>
+                    <span class="date__state">{{ reason }}</span>
+                    {%- unless selectable -%}
+                      <span class="visually-hidden">Not available: {{ reason | downcase }}.</span>
+                    {%- endunless -%}
+                  </label>
+                </div>
+              {%- endfor -%}
+            </div>
+          </fieldset>
+
+          <fieldset class="fieldset">
+            <legend class="fieldset__legend">Delivery method</legend>
+            <div class="methods">
+              {%- for m in methods -%}
+                <div class="method">
+                  <input class="method__input" type="radio" name="attributes[Method]" id="cart-method-{{ m.value }}"
+                         value="{{ m.value }}" {% if m.value.value == method %}checked{% endif %}>
+                  <label class="method__label" for="cart-method-{{ m.value }}">
+                    <span>{{ m.label }}</span>
+                    <span class="method__price num">{% if m.price.value > 0 %}{{ m.price.value | money }}{% else %}Free{% endif %}</span>
+                  </label>
+                </div>
+              {%- endfor -%}
+            </div>
+          </fieldset>
+
+          <button class="btn btn--ghost btn--wide" type="submit">Update delivery</button>
+        </form>
+
+        <div class="summary__totals">
+          <div class="summary__row"><span>Subtotal</span><span class="num">{{ cart.items_subtotal_price | money }}</span></div>
+          <div class="summary__row">
+            <span>Delivery <span class="muted">· {{ method_label }}</span></span>
+            <span class="num">{% if method_price > 0 %}{{ method_price | money }}{% else %}Free{% endif %}</span>
+          </div>
+          <div class="summary__row summary__row--total"><span>Total</span><span class="num">{{ cart.total_price | money }}</span></div>
+        </div>
+
+        {%- if blocked -%}
+          <button class="btn btn--wide" type="button" disabled aria-describedby="cart-blocked">Checkout</button>
+          <p class="summary__note" id="cart-blocked">Fix the problem above to continue.</p>
+        {%- else -%}
+          <form action="{{ routes.cart_url }}" method="post">
+            <button class="btn btn--wide" type="submit" name="checkout">Checkout</button>
+          </form>
+        {%- endif -%}
+
+        <p class="summary__note">Delivery is charged once per order, not per bouquet, and is added at checkout.</p>
+      </aside>
+    </div>
+
+  {%- else -%}
+
+    <div class="empty">
+      <h1 class="display">Your cart is empty</h1>
+      <p>Week {{ current.number }} is cut and on the bench.</p>
+      <div class="empty__actions">
+        <a class="btn" href="/collections/week-{{ current.number }}">See this week</a>
+      </div>
+    </div>
+
+  {%- endif -%}
+</div>
+
+{% schema %}
+{ "name": "Cart", "settings": [], "presets": [{ "name": "Cart" }] }
+{% endschema %}

@@ -1,0 +1,44 @@
+{%- comment -%}
+  Customer account. Shopify hosts the real authentication, so the preview shows
+  the signed-out state — which is the one a theme actually has to design and the
+  one most themes leave looking like a default form.
+{%- endcomment -%}
+
+<div class="wrap">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a> / <span aria-current="page">Account</span>
+  </nav>
+</div>
+
+<div class="wrap accountgrid">
+  <div>
+    <h1 class="display pagehead__title">Sign in</h1>
+    <p class="muted" style="max-width:38ch">Your account holds order history, saved addresses and — if you have one — your Flower Share, including the weeks you have paused.</p>
+
+    <form class="contactform" action="/account/login" method="post" style="margin-top:var(--s-3)">
+      <div class="field">
+        <label for="a-email">Email</label>
+        <input id="a-email" name="email" type="email" autocomplete="email" required>
+      </div>
+      <div class="field">
+        <label for="a-pass">Password</label>
+        <input id="a-pass" name="password" type="password" autocomplete="current-password" required>
+      </div>
+      <button class="btn" type="submit">Sign in</button>
+      <p class="muted" style="font-size:var(--t-14);margin-top:var(--s-2)">
+        <a class="textlink" href="/account/register">Create an account</a>
+      </p>
+    </form>
+  </div>
+
+  <aside class="contactaside">
+    <h2 class="display">No account needed</h2>
+    <p class="muted">You can order without one. An account only saves you typing the address again, and lets you pause a Share.</p>
+    <h2 class="display" style="margin-top:var(--s-4)">Flower Share members</h2>
+    <p class="muted">Pause any week before the Monday 18:00 cut-off. Pausing is free and there is no limit.</p>
+  </aside>
+</div>
+
+{% schema %}
+{ "name": "Account", "settings": [], "presets": [{ "name": "Account" }] }
+{% endschema %}

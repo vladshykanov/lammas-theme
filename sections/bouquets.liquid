@@ -1,0 +1,30 @@
+{%- assign week = shop.metafields.lammas.current_week.value -%}
+{%- assign season_open = false -%}
+{%- if week != blank and week.published.value -%}{%- assign season_open = true -%}{%- endif -%}
+{%- assign week_handle = 'week-' | append: week.number -%}
+{%- assign this_week = collections[week_handle] -%}
+{%- if season_open -%}
+<section class="wrap section">
+  <div class="section__head">
+    <h2 class="display">{{ section.settings.heading }}</h2>
+    <a class="textlink" href="{{ this_week.url }}">{{ section.settings.link_label }} &rarr;</a>
+  </div>
+
+  <div class="bouquets">
+    {%- for b in this_week.products -%}
+      {% render 'bouquet-card', b: b %}
+    {%- endfor -%}
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Bouquets this week",
+  "settings": [
+    { "id": "heading", "type": "text", "label": "Heading", "default": "Bouquets this week" },
+    { "id": "link_label", "type": "text", "label": "Link", "default": "See the whole week" }
+  ],
+  "presets": [{ "name": "Bouquets this week" }]
+}
+{% endschema %}

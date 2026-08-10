@@ -1,0 +1,67 @@
+{%- liquid
+  assign current = shop.metafields.lammas.current_week.value
+  assign weeks = shop.metaobjects.week.values | sort: 'number'
+-%}
+<header class="header">
+  <div class="wrap header__bar">
+    <a class="brand" href="/">
+      <span class="brand__name">{{ shop.name }}</span>
+      <span class="brand__place">{{ shop.place }}</span>
+    </a>
+
+    <nav class="nav" aria-label="Primary">
+      <a href="/collections/week-{{ current.number }}" {% if template == 'collection' %}aria-current="page"{% endif %}>Shop</a>
+      <a href="/pages/flower-share">Flower Share</a>
+      <a href="/pages/weddings">Weddings</a>
+      <a href="/pages/about">About</a>
+      <a href="/blogs/journal">Journal</a>
+    </nav>
+
+    <div class="utils">
+      <a href="/search" aria-label="Search">{% render 'icon', icon: 'search' %}</a>
+      <a href="/account" aria-label="Account">{% render 'icon', icon: 'user' %}</a>
+      <a class="cartlink" href="#cart-drawer" aria-label="Cart, {{ cart.item_count }} items">
+        {% render 'icon', icon: 'cart' %}
+        {%- if cart.item_count > 0 -%}<span class="cartcount num">{{ cart.item_count }}</span>{%- endif -%}
+      </a>
+    </div>
+  </div>
+
+  {%- comment -%}
+    The week strip is the primary navigation, because the catalogue is a
+    calendar. Weeks with no cut list published are shown but dimmed and
+    unlinked — a customer should see the shape of the season, not a wall of
+    identical links.
+  {%- endcomment -%}
+  <nav class="weeks" aria-label="Choose a week">
+    <div class="wrap weeks__inner">
+      <span class="weeks__label">Weeks</span>
+
+      <a class="weeks__arrow" href="/collections/week-{{ current.number | minus: 1 }}" aria-label="Earlier weeks">
+        {% render 'icon', icon: 'left' %}
+      </a>
+
+      <div class="weeks__scroll">
+        {%- for w in weeks -%}
+          {%- if w.published.value -%}
+            {%- assign week_handle = 'week-' | append: w.number -%}
+            <a class="weeks__item num" href="/collections/{{ week_handle }}"
+               {% if collection.handle == week_handle %}aria-current="page"{% endif %}>{{ w.number }}</a>
+          {%- else -%}
+            <span class="weeks__item num" data-unpublished
+                  title="Week {{ w.number }} — not cut yet">{{ w.number }}</span>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+
+      <a class="weeks__arrow" href="/collections/week-{{ current.number | plus: 1 }}" aria-label="Later weeks">
+        {% render 'icon', icon: 'right' %}
+      </a>
+    </div>
+  </nav>
+  {% render 'cart-drawer' %}
+</header>
+
+{% schema %}
+{ "name": "Header", "settings": [] }
+{% endschema %}

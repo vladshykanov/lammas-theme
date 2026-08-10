@@ -1,0 +1,36 @@
+{%- assign week = shop.metafields.lammas.current_week.value -%}
+{%- assign season_open = false -%}
+{%- if week != blank and week.published.value -%}{%- assign season_open = true -%}{%- endif -%}
+{%- if season_open -%}
+<section class="wrap" style="padding-block:var(--s-8)">
+  <div style="display:flex;align-items:baseline;justify-content:space-between;gap:var(--s-3);flex-wrap:wrap;margin-bottom:var(--s-4)">
+    <h2 class="display" style="font-size:var(--t-31)">{{ section.settings.heading }}</h2>
+    <a class="textlink" href="/pages/varieties">{{ section.settings.link_label }} &rarr;</a>
+  </div>
+
+  {%- comment -%}
+    Driven by the same cut list as every bouquet's composition, so the home page
+    and the product page cannot disagree about what is in the field.
+  {%- endcomment -%}
+  <div class="varieties">
+    {%- for v in week.varieties.value -%}
+      <a class="variety" href="/pages/varieties#{{ v.slug }}">
+        <span class="variety__disc">{% render 'variety', v: v %}</span>
+        <p class="variety__name">{{ v.name }}</p>
+        <p class="variety__cultivar">{{ v.cultivar }}</p>
+      </a>
+    {%- endfor -%}
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "What's flowering",
+  "settings": [
+    { "id": "heading", "type": "text", "label": "Heading", "default": "What's flowering this week" },
+    { "id": "link_label", "type": "text", "label": "Link", "default": "See all varieties" }
+  ],
+  "presets": [{ "name": "What's flowering" }]
+}
+{% endschema %}

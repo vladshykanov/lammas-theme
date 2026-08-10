@@ -1,0 +1,30 @@
+<section class="wrap tiles">
+  {%- for block in section.blocks -%}
+    <article class="tile">
+      <div class="tile__body">
+        <h3 class="display tile__title">{{ block.settings.title }}</h3>
+        <p class="tile__body-text muted">{{ block.settings.body }}</p>
+        <a class="textlink" href="{{ block.settings.url }}">{{ block.settings.link_label }} &rarr;</a>
+      </div>
+      {%- if block.settings.price != blank -%}
+        <p class="tile__price num">{{ block.settings.price }}</p>
+      {%- endif -%}
+    </article>
+  {%- endfor -%}
+</section>
+
+{% schema %}
+{
+  "name": "Feature tiles",
+  "blocks": [
+    { "type": "tile", "name": "Tile", "settings": [
+      { "id": "title", "type": "text", "label": "Title" },
+      { "id": "body", "type": "textarea", "label": "Body" },
+      { "id": "price", "type": "text", "label": "Price line" },
+      { "id": "link_label", "type": "text", "label": "Link" },
+      { "id": "url", "type": "url", "label": "Link URL" }
+    ] }
+  ],
+  "presets": [{ "name": "Feature tiles" }]
+}
+{% endschema %}

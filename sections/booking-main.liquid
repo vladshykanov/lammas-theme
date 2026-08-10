@@ -1,0 +1,59 @@
+{%- comment -%}
+  The Listening Room. Not a bouquet: no cut, no courier, no delivery date — so
+  it deliberately does not borrow the bouquet buy-form. Sharing that form would
+  have meant asking someone to choose a delivery method for a room.
+{%- endcomment -%}
+
+<div class="wrap">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a> / <span aria-current="page">Listening Room</span>
+  </nav>
+</div>
+
+<div class="wrap product">
+  <figure class="product__stage plate" style="aspect-ratio:4/3">
+    <img src="{{ 'plates-bench.jpg' | asset_url }}" alt="The old grading shed, set up for listening" width="1200" height="800">
+  </figure>
+
+  <div class="product__buy">
+    <h1 class="display product__title">Listening Room</h1>
+    <p class="product__stems muted">90 minutes · up to 3 people</p>
+    <p class="product__price display num">£3.00 <span class="muted" style="font-size:var(--t-16)">or free with any order</span></p>
+
+    <p class="product__blurb">
+      The old grading shed has a decent pair of speakers, a turntable and nothing else in it.
+      Bring your own records. There is a kettle.
+    </p>
+
+    <form class="buyform" action="/cart/add" method="post">
+      <input type="hidden" name="id" value="listening-room">
+
+      <fieldset class="fieldset">
+        <legend class="fieldset__legend">Choose a session</legend>
+        <div class="methods">
+          {%- assign slots = 'Wed 6 Aug · 10:00,Wed 6 Aug · 14:00,Sat 9 Aug · 10:00,Sat 9 Aug · 14:00' | split: ',' -%}
+          {%- for s in slots -%}
+            <div class="method">
+              <input class="method__input" type="radio" name="slot" id="slot-{{ forloop.index }}"
+                     value="{{ s }}" {% if forloop.first %}checked{% endif %}>
+              <label class="method__label" for="slot-{{ forloop.index }}">
+                <span>{{ s }}</span>
+                <span class="method__price num">{% if forloop.index == 2 %}Booked{% else %}Free{% endif %}</span>
+              </label>
+            </div>
+          {%- endfor -%}
+        </div>
+      </fieldset>
+
+      <button class="btn btn--wide" type="submit">Add to cart</button>
+    </form>
+
+    <p class="muted" style="font-size:var(--t-14);margin-top:var(--s-2)">
+      Cancel up to 48 hours before for a full refund.
+    </p>
+  </div>
+</div>
+
+{% schema %}
+{ "name": "Listening Room", "settings": [], "presets": [{ "name": "Listening Room" }] }
+{% endschema %}

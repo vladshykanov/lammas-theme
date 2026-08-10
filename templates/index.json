@@ -1,0 +1,31 @@
+{
+  "sections": {
+    "hero":      { "type": "hero-week", "settings": {} },
+    "flowering": { "type": "flowering", "settings": {} },
+    "bouquets":  { "type": "bouquets", "settings": {} },
+    "grow":      { "type": "how-we-grow", "settings": {} },
+    "tiles": {
+      "type": "tiles",
+      "blocks": {
+        "share": { "type": "tile", "settings": {
+          "title": "Flower Share",
+          "body": "A bouquet every week, all season long. Pause any week you are away.",
+          "price": "From £22.00 / week",
+          "link_label": "View share", "url": "/pages/flower-share" } },
+        "listening": { "type": "tile", "settings": {
+          "title": "Listening Room",
+          "body": "90 minutes, up to 3 people. Bring your records. In the old grading shed.",
+          "price": "£3.00 or free with any order",
+          "link_label": "Book a session", "url": "/products/listening-room" } },
+        "archive": { "type": "tile", "settings": {
+          "title": "Season Archive",
+          "body": "See what flowered every week this year, and what it cost.",
+          "price": "",
+          "link_label": "View archive", "url": "/pages/archive" } }
+      },
+      "block_order": ["share", "listening", "archive"],
+      "settings": {}
+    }
+  },
+  "order": ["hero", "flowering", "bouquets", "grow", "tiles"]
+}

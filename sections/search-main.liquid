@@ -1,0 +1,94 @@
+{%- liquid
+  assign current = shop.metafields.lammas.current_week.value
+  assign varieties = shop.metaobjects.variety.values | sort: 'name'
+  assign term = search.terms | downcase
+  assign matched_varieties = 0
+  if search.performed
+    for v in varieties
+      assign hay = v.name.value | append: ' ' | append: v.cultivar.value | downcase
+      if hay contains term
+        assign matched_varieties = matched_varieties | plus: 1
+      endif
+    endfor
+  endif
+-%}
+<div class="wrap">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a> / <span aria-current="page">Search</span>
+  </nav>
+</div>
+
+<header class="wrap pagehead">
+  <h1 class="display pagehead__title">Search</h1>
+  <form class="searchform" action="{{ routes.search_url }}" method="get" role="search">
+    <label class="visually-hidden" for="q">Search the shop</label>
+    <input id="q" name="q" type="search" value="{{ search.terms | escape }}" placeholder="Bouquets, varieties, journal…">
+    <input type="hidden" name="type" value="product,article,page">
+    <input type="hidden" name="options[prefix]" value="last">
+    <button class="btn" type="submit">Search</button>
+  </form>
+</header>
+
+<div class="wrap">
+  {%- if search.performed == false -%}
+    <p class="muted">Try a flower name, a bouquet, or a week number.</p>
+
+  {%- elsif search.results_count == 0 and matched_varieties == 0 -%}
+    <div class="empty">
+      <h2 class="display">Nothing matched “{{ search.terms | escape }}”</h2>
+      <p>We grow forty-odd varieties, so plenty is not here. The full list is worth a look.</p>
+      <div class="empty__actions">
+        <a class="btn" href="/pages/varieties">All varieties</a>
+        <a class="btn btn--ghost" href="/collections/week-{{ current.number }}">This week</a>
+      </div>
+    </div>
+
+  {%- else -%}
+    <p class="muted" style="margin-bottom:var(--s-4)">{{ search.results_count }} result{% if search.results_count != 1 %}s{% endif %} for “{{ search.terms | escape }}”</p>
+
+    {%- assign found_products = search.results | where: 'object_type', 'product' -%}
+    {%- if found_products.size > 0 -%}
+      <h2 class="display searchgroup">Bouquets</h2>
+      <div class="bouquets">
+        {%- for b in found_products -%}{% render 'bouquet-card', b: b %}{%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- comment -%}
+      Varieties are metaobjects, which Shopify's search index does not cover, so
+      they are matched here against the same records the rest of the site reads.
+    {%- endcomment -%}
+    {%- if matched_varieties > 0 -%}
+      <h2 class="display searchgroup">Varieties</h2>
+      <div class="varieties">
+        {%- for v in varieties -%}
+          {%- assign hay = v.name.value | append: ' ' | append: v.cultivar.value | downcase -%}
+          {%- unless hay contains term -%}{%- continue -%}{%- endunless -%}
+          <a class="variety" href="/pages/varieties#{{ v.slug }}">
+            <span class="variety__disc">{% render 'variety', v: v %}</span>
+            <p class="variety__name">{{ v.name }}</p>
+            <p class="variety__cultivar">{{ v.cultivar }}</p>
+          </a>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- assign found_articles = search.results | where: 'object_type', 'article' -%}
+    {%- if found_articles.size > 0 -%}
+      <h2 class="display searchgroup">Journal</h2>
+      <div class="posts">
+        {%- for a in found_articles -%}
+          <article class="post">
+            <p class="post__date label">{{ a.published_at | date: '%-d %B %Y' }}</p>
+            <h3 class="display post__title"><a href="{{ a.url }}">{{ a.title }}</a></h3>
+            <p class="post__excerpt muted">{{ a.excerpt_or_content | strip_html | truncate: 160 }}</p>
+          </article>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+  {%- endif -%}
+</div>
+
+{% schema %}
+{ "name": "Search", "settings": [], "presets": [{ "name": "Search" }] }
+{% endschema %}

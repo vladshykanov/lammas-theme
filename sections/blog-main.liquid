@@ -1,0 +1,25 @@
+<div class="wrap">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a> / <span aria-current="page">Journal</span>
+  </nav>
+</div>
+
+<header class="wrap pagehead">
+  <h1 class="display pagehead__title">Journal</h1>
+  <p class="pagehead__lede">Notes from the field, written when there is something worth saying rather than on a schedule.</p>
+</header>
+
+<div class="wrap posts">
+  {%- for a in blog.articles -%}
+    <article class="post">
+      <p class="post__date label">{{ a.published_at | date: '%-d %B %Y' }}</p>
+      <h2 class="display post__title"><a href="{{ a.url }}">{{ a.title }}</a></h2>
+      <p class="post__excerpt muted">{{ a.excerpt_or_content | strip_html | truncate: 180 }}</p>
+      <a class="textlink" href="{{ a.url }}">Read</a>
+    </article>
+  {%- endfor -%}
+</div>
+
+{% schema %}
+{ "name": "Journal", "settings": [], "presets": [{ "name": "Journal" }] }
+{% endschema %}

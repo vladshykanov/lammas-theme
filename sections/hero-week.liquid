@@ -1,0 +1,54 @@
+{%- comment -%}
+  Out of season the shop has nothing to sell, so it says so and offers the two
+  things it can still take: a place on next season's list, and the archive.
+  Pretending the field is full would be worse than an honest closed sign.
+{%- endcomment -%}
+{%- assign week = shop.metafields.lammas.current_week.value -%}
+{%- assign season_open = false -%}
+{%- if week != blank and week.published.value -%}{%- assign season_open = true -%}{%- endif -%}
+{%- unless season_open -%}
+  <section class="wrap closed">
+    <p class="label closed__eyebrow">{{ section.settings.closed_eyebrow }}</p>
+    <h1 class="display">{{ section.settings.closed_heading }}</h1>
+    <p>{{ section.settings.closed_body }}</p>
+    <p class="muted">The first cut is usually week 12, around the third week of March.</p>
+    <div class="closed__actions">
+      <a class="btn" href="/pages/flower-share">Join the Flower Share list</a>
+      <a class="btn btn--ghost" href="/pages/archive">Season archive</a>
+    </div>
+  </section>
+{%- else -%}
+<section class="hero">
+  <div class="hero__plate plate">
+    <img src="{{ 'plates-field-dawn.jpg' | asset_url }}"
+         alt="The field at first light, stems standing against a low sun"
+         width="1600" height="900" fetchpriority="high">
+    <div class="hero__scrim"></div>
+
+    <div class="wrap hero__copy">
+      <p class="hero__week num">{{ week.label }}</p>
+      <p class="hero__dates display">{{ week.dates }}</p>
+      <p class="hero__claim">{{ section.settings.claim }}</p>
+      <a class="btn hero__cta" href="/collections/week-{{ week.number }}">{{ section.settings.cta_label }}</a>
+    </div>
+  </div>
+
+  {% render 'facts' %}
+</section>
+{%- endunless -%}
+
+{% schema %}
+{
+  "name": "Hero — this week",
+  "settings": [
+    { "id": "claim", "type": "textarea", "label": "Claim",
+      "default": "Cut on the field. Not flown. Flowers that smell like the place they were grown." },
+    { "id": "cta_label", "type": "text", "label": "Button", "default": "Shop this week" },
+    { "id": "closed_eyebrow", "type": "text", "label": "Closed eyebrow", "default": "The field is resting" },
+    { "id": "closed_heading", "type": "text", "label": "Closed heading", "default": "Nothing is cut between November and March." },
+    { "id": "closed_body", "type": "textarea", "label": "Closed body",
+      "default": "We grow outdoors in Fife, so there is a real winter and we do not pretend otherwise. The tunnels are being turned over and the dahlias are lifted and stored." }
+  ],
+  "presets": [{ "name": "Hero — this week" }]
+}
+{% endschema %}

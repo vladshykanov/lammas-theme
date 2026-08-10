@@ -1,0 +1,132 @@
+{%- comment -%}
+  A variety portrait, drawn rather than photographed.
+
+  The shop sells knowing what is in the field, so these have to be legible at
+  56px in the "What's flowering this week" row and still hold up at 160px on the
+  product page. A blurred photograph does neither. Each form is drawn from the
+  flower's actual habit — a Scabiosa is a pincushion on a wiry stem, an Amaranth
+  hangs, a Physalis carries lanterns — so a grower would recognise them.
+
+  Accepts: v (variety object with hex, accent, form), size ('sm' | 'lg')
+{%- endcomment -%}
+
+{%- assign f = v.form.value -%}
+{%- assign c = v.hex -%}
+{%- assign a = v.accent -%}
+{%- assign leaf = '#6f7d55' -%}
+{%- assign stem = '#7f8a62' -%}
+
+<svg class="variety__art" viewBox="0 0 120 140" role="img"
+     aria-label="{{ v.name }} ‘{{ v.cultivar }}’">
+
+  {%- case f -%}
+
+  {%- when 'dinnerplate' -%}
+    {%- comment -%} Dahlia: a wide layered head on a thick stem. {%- endcomment -%}
+    <path d="M60 138 C58 108 60 92 60 78" stroke="{{ stem }}" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+    <path d="M60 112 C44 108 36 98 34 88 C48 88 57 98 60 112 Z" fill="{{ leaf }}"/>
+    <path d="M60 104 C76 100 84 90 86 80 C72 80 63 90 60 104 Z" fill="{{ leaf }}" opacity=".85"/>
+    {%- for i in (0..11) -%}
+      {%- assign rot = i | times: 30 -%}
+      <ellipse cx="60" cy="46" rx="9" ry="24" fill="{{ c }}" opacity=".95"
+               transform="rotate({{ rot }} 60 62)"/>
+    {%- endfor -%}
+    {%- for i in (0..7) -%}
+      {%- assign rot = i | times: 45 | plus: 22 -%}
+      <ellipse cx="60" cy="53" rx="6.5" ry="15" fill="{{ a }}" opacity=".55"
+               transform="rotate({{ rot }} 60 62)"/>
+    {%- endfor -%}
+    <circle cx="60" cy="62" r="6" fill="{{ a }}"/>
+
+  {%- when 'spire' -%}
+    {%- comment -%} Sweet pea / larkspur: blooms climbing one stem. {%- endcomment -%}
+    <path d="M60 138 C58 106 61 74 60 26" stroke="{{ stem }}" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+    {%- assign ys = '30,44,58,72,86,100' | split: ',' -%}
+    {%- for y in ys -%}
+      {%- assign i = forloop.index0 -%}
+      {%- assign w = 8 | plus: i | times: 1 -%}
+      {%- assign side = forloop.index | modulo: 2 -%}
+      {%- if side == 0 -%}
+        <path d="M60 {{ y }} C44 {{ y | minus: 10 }} 30 {{ y | minus: 4 }} 30 {{ y | plus: 4 }} C34 {{ y | plus: 12 }} 52 {{ y | plus: 8 }} 60 {{ y }} Z" fill="{{ c }}"/>
+        <path d="M60 {{ y }} C48 {{ y | minus: 4 }} 40 {{ y | plus: 1 }} 38 {{ y | plus: 5 }}" stroke="{{ a }}" stroke-width="1.6" fill="none" opacity=".7"/>
+      {%- else -%}
+        <path d="M60 {{ y }} C76 {{ y | minus: 10 }} 90 {{ y | minus: 4 }} 90 {{ y | plus: 4 }} C86 {{ y | plus: 12 }} 68 {{ y | plus: 8 }} 60 {{ y }} Z" fill="{{ c }}"/>
+        <path d="M60 {{ y }} C72 {{ y | minus: 4 }} 80 {{ y | plus: 1 }} 82 {{ y | plus: 5 }}" stroke="{{ a }}" stroke-width="1.6" fill="none" opacity=".7"/>
+      {%- endif -%}
+    {%- endfor -%}
+    <path d="M60 118 C48 116 42 108 41 100 C51 101 58 109 60 118 Z" fill="{{ leaf }}"/>
+
+  {%- when 'pincushion' -%}
+    {%- comment -%} Scabiosa / zinnia: domed head, wiry stem. {%- endcomment -%}
+    <path d="M60 138 C57 110 62 88 60 68" stroke="{{ stem }}" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <path d="M60 108 C46 105 39 96 38 87 C50 88 58 97 60 108 Z" fill="{{ leaf }}"/>
+    <path d="M60 100 C74 97 81 89 82 81 C70 82 62 90 60 100 Z" fill="{{ leaf }}" opacity=".8"/>
+    {%- for i in (0..13) -%}
+      {%- assign rot = i | times: 26 -%}
+      <ellipse cx="60" cy="48" rx="7" ry="13" fill="{{ c }}" transform="rotate({{ rot }} 60 58)"/>
+    {%- endfor -%}
+    <circle cx="60" cy="58" r="12" fill="{{ a }}"/>
+    {%- for i in (0..9) -%}
+      {%- assign rot = i | times: 36 -%}
+      <circle cx="60" cy="49" r="1.9" fill="{{ c }}" opacity=".9" transform="rotate({{ rot }} 60 58)"/>
+    {%- endfor -%}
+
+  {%- when 'plume' -%}
+    {%- comment -%}
+      Amaranth: heavy ropes of flower that hang and swing. Explicit coordinates —
+      building these paths by doing arithmetic on split strings silently dropped
+      half the tassels.
+    {%- endcomment -%}
+    <path d="M60 138 C58 114 61 96 60 62" stroke="{{ stem }}" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+    <path d="M60 116 C45 113 37 104 36 94 C48 95 57 105 60 116 Z" fill="{{ leaf }}"/>
+    <path d="M60 106 C76 103 84 95 85 86 C72 87 63 96 60 106 Z" fill="{{ leaf }}" opacity=".8"/>
+    <path d="M44 56 C40 70 41 84 38 96"  stroke="{{ c }}" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <path d="M53 58 C51 76 54 94 51 110" stroke="{{ c }}" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <path d="M62 58 C62 78 60 98 62 118" stroke="{{ c }}" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <path d="M71 57 C73 74 70 92 73 106" stroke="{{ c }}" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <path d="M79 55 C83 68 81 80 84 92"  stroke="{{ c }}" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <path d="M53 58 C51 76 54 94 51 110" stroke="{{ a }}" stroke-width="2.6" fill="none" stroke-linecap="round" opacity=".55"/>
+    <path d="M62 58 C62 78 60 98 62 118" stroke="{{ a }}" stroke-width="2.6" fill="none" stroke-linecap="round" opacity=".55"/>
+    <path d="M71 57 C73 74 70 92 73 106" stroke="{{ a }}" stroke-width="2.6" fill="none" stroke-linecap="round" opacity=".55"/>
+    <ellipse cx="61" cy="54" rx="22" ry="8" fill="{{ c }}"/>
+
+  {%- when 'lantern' -%}
+    {%- comment -%} Physalis: papery lanterns hanging from an arching stem. {%- endcomment -%}
+    <path d="M62 138 C58 112 70 78 54 38" stroke="{{ stem }}" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+    <path d="M54 42 C39 47 37 66 54 71 C71 66 69 47 54 42 Z" fill="{{ c }}"/>
+    <path d="M54 42 L54 71" stroke="{{ a }}" stroke-width="1.4" opacity=".65"/>
+    <path d="M64 66 C48 72 46 92 64 98 C82 92 80 72 64 66 Z" fill="{{ c }}"/>
+    <path d="M64 66 L64 98" stroke="{{ a }}" stroke-width="1.5" opacity=".65"/>
+    <path d="M58 94 C42 100 40 120 58 126 C76 120 74 100 58 94 Z" fill="{{ c }}"/>
+    <path d="M58 94 L58 126" stroke="{{ a }}" stroke-width="1.5" opacity=".65"/>
+    <path d="M54 42 C50 36 48 32 46 28" stroke="{{ leaf }}" stroke-width="1.8" fill="none"/>
+
+  {%- when 'pod' -%}
+    {%- comment -%} Nigella: an inflated pod inside a collar of thread-fine foliage. {%- endcomment -%}
+    <path d="M60 138 C58 112 61 92 60 72" stroke="{{ stem }}" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    {%- for i in (0..11) -%}
+      {%- assign rot = i | times: 30 -%}
+      <path d="M60 58 C60 44 60 36 60 28" stroke="{{ leaf }}" stroke-width="1.4" fill="none"
+            opacity=".8" transform="rotate({{ rot }} 60 58)"/>
+    {%- endfor -%}
+    <ellipse cx="60" cy="58" rx="16" ry="19" fill="{{ c }}"/>
+    {%- for i in (0..4) -%}
+      {%- assign rot = i | times: 36 | minus: 72 -%}
+      <path d="M60 40 C64 48 64 56 60 58" stroke="{{ a }}" stroke-width="1.6" fill="none"
+            transform="rotate({{ rot }} 60 58)"/>
+    {%- endfor -%}
+
+  {%- else -%}
+    {%- comment -%} Daisy: cosmos, rudbeckia — a simple ray flower. {%- endcomment -%}
+    <path d="M60 138 C57 108 62 86 60 64" stroke="{{ stem }}" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <path d="M60 106 C47 104 40 96 39 87 C50 88 58 96 60 106 Z" fill="{{ leaf }}"/>
+    <path d="M60 96 C73 94 80 87 81 79 C70 80 62 87 60 96 Z" fill="{{ leaf }}" opacity=".8"/>
+    {%- for i in (0..7) -%}
+      {%- assign rot = i | times: 45 -%}
+      <ellipse cx="60" cy="40" rx="7.5" ry="20" fill="{{ c }}" transform="rotate({{ rot }} 60 56)"/>
+    {%- endfor -%}
+    <circle cx="60" cy="56" r="9" fill="{{ a }}"/>
+    <circle cx="60" cy="56" r="4.5" fill="{{ c }}" opacity=".5"/>
+
+  {%- endcase -%}
+</svg>
