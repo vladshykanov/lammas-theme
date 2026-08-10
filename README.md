@@ -10,6 +10,12 @@ that week, and whether those particular flowers survive a courier.
 
 ![Home](docs/screenshots/01-home.jpg)
 
+**Live demo:** https://iiiqq6-w2.myshopify.com — storefront password `shopify`
+
+The store sits behind Shopify's password page; the theme and the script that
+fills the store with the data it reads are both in this repository.
+
+
 
 ## What is interesting in here
 
