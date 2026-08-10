@@ -10,6 +10,12 @@ that week, and whether those particular flowers survive a courier.
 
 ![Home](docs/screenshots/01-home.jpg)
 
+**Live demo:** https://iiiqq6-w2.myshopify.com — storefront password `shopify`
+
+It runs on a Shopify preview store, so it sits behind the password page and will
+not outlive the trial. The theme and the script that fills the store are here.
+
+
 ## What is interesting in here
 
 **A vocabulary Shopify does not have.** A variety is a thing, a week is a thing,
